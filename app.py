@@ -40,7 +40,7 @@ st.markdown("""
 # ---------------------------------------------------------
 # DỮ LIỆU CHẨN ĐOÁN
 # ---------------------------------------------------------
-    diagnostic_data = {
+diagnostic_data = {
         # NHÓM CẢM BIẾN KHÍ NẠP & NHIÊN LIỆU (01-10)
         "P0100": "Lỗi mạch lưu lượng khí nạp (MAF). Kiểm tra: Giắc cắm MAF, dây dẫn hoặc hở cổ hút.",
         "P0101": "Hiệu suất mạch MAF không hợp lý. Kiểm tra: Cảm biến bẩn, lọc gió tắc hoặc rò rỉ khí nạp.",
