@@ -21,7 +21,7 @@ if not st.session_state.agreed:
     st.error("""
     ### ⚠️ CẢNH BÁO BẮT BUỘC:
     ĐÂY LÀ PHẦN MỀM DÀNH CHO THỢ SỬA XE CHUYÊN NGHIỆP ĐƯỢC ĐÀO TẠO BÀI BẢN. 
-    MỌI HẬU QUẢ KHI LÀM VIỆC SAI NGUYÊN TẮC VÀ KỸ THUẬT SẼ PHẢI TỰ CHỊU HẬU QUẢ!
+    MỌI HẬU QUẢ KHI LÀM VIỆC SAI NGUYÊN TẮC VÀ KỸ THUẬT SẼ PHẢI TỰ CHỊU TRÁCH NHIỆM!
     """)
     if st.button("TÔI ĐÃ HIỂU VÀ ĐỒNG Ý"):
         st.session_state.agreed = True
@@ -60,5 +60,5 @@ st.write("---")
 st.markdown("### 📞 HỖ TRỢ KỸ THUẬT")
 st.success("**Nhà phát triển:** Chủ Gara Minh Khang")
 # HÃY THAY SỐ ĐIỆN THOẠI CỦA BẠN VÀO DÒNG DƯỚI ĐÂY
-st.markdown("#### 📱 Hotline: **09xx.xxx.xxx**") 
+st.markdown("#### 📱 Hotline: **0963227718**") 
 st.caption("© 2024 Gara Minh Khang Auto - Kỹ thuật chuyên sâu")
