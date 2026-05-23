@@ -40,7 +40,72 @@ st.markdown("""
 # ---------------------------------------------------------
 # DỮ LIỆU CHẨN ĐOÁN
 # ---------------------------------------------------------
-DIAGNOSTIC_DATA = {
+    diagnostic_data = {
+        # NHÓM CẢM BIẾN KHÍ NẠP & NHIÊN LIỆU (01-10)
+        "P0100": "Lỗi mạch lưu lượng khí nạp (MAF). Kiểm tra: Giắc cắm MAF, dây dẫn hoặc hở cổ hút.",
+        "P0101": "Hiệu suất mạch MAF không hợp lý. Kiểm tra: Cảm biến bẩn, lọc gió tắc hoặc rò rỉ khí nạp.",
+        "P0102": "Mạch MAF có điện áp thấp. Kiểm tra: Cảm biến hỏng hoặc đứt dây nguồn 5V/12V.",
+        "P0103": "Mạch MAF có điện áp cao. Kiểm tra: Chạm chập dây tín hiệu hoặc lỗi cảm biến.",
+        "P0105": "Lỗi mạch áp suất tuyệt đối cổ hút (MAP). Kiểm tra: Đường ống chân không, cảm biến MAP.",
+        "P0110": "Lỗi cảm biến nhiệt độ khí nạp (IAT). Kiểm tra: Vệ sinh cảm biến hoặc kiểm tra giắc cắm.",
+        "P0115": "Lỗi mạch nhiệt độ nước làm mát (ECT). Kiểm tra: Cảm biến ECT hỏng hoặc thiếu nước làm mát.",
+        "P0116": "Hiệu suất mạch ECT không ổn định. Kiểm tra: Van hằng nhiệt bị kẹt hoặc cảm biến lỗi.",
+        "P0120": "Lỗi mạch cảm biến vị trí bướm ga (TPS) - Nhánh A. Kiểm tra: Cảm biến TPS hoặc họng ga điện.",
+        "P0121": "Hiệu suất cảm biến bướm ga không hợp lý. Kiểm tra: Vệ sinh họng ga, kiểm tra độ rơ bướm ga.",
+
+        # NHÓM CẢM BIẾN OXY & TỈ LỆ A/F (11-30)
+        "P0130": "Lỗi mạch cảm biến Oxy (Bank 1 Sensor 1). Kiểm tra: Dây dẫn cảm biến hoặc lỗi chính cảm biến.",
+        "P0133": "Cảm biến Oxy phản ứng chậm (Bank 1 Sensor 1). Kiểm tra: Cảm biến bị đóng muội than quá nhiều.",
+        "P0134": "Mạch cảm biến Oxy không hoạt động (Bank 1 Sensor 1). Kiểm tra: Đứt dây sấy cảm biến.",
+        "P0136": "Lỗi mạch cảm biến Oxy (Bank 1 Sensor 2). Kiểm tra: Cảm biến sau bầu xúc tác.",
+        "P0171": "Hệ thống nhiên liệu quá nghèo (Bank 1). Kiểm tra: Lọc xăng, bơm xăng yếu, rò rỉ khí nạp.",
+        "P0172": "Hệ thống nhiên liệu quá giàu (Bank 1). Kiểm tra: Kim phun đái, cảm biến MAF sai số, lọc gió bẩn.",
+        "P0174": "Hệ thống nhiên liệu quá nghèo (Bank 2). Thường gặp trên máy V6 (Camry, Prado).",
+        "P0175": "Hệ thống nhiên liệu quá giàu (Bank 2). Kiểm tra: Hệ thống phun xăng nhánh 2.",
+
+        # NHÓM ĐÁNH LỬA & BỎ LỬA (31-50)
+        "P0300": "Lỗi bỏ lửa ngẫu nhiên (Multiple Misfire). Kiểm tra: Bugi, bô bin, chất lượng nhiên liệu.",
+        "P0301": "Bỏ lửa xi lanh số 1. Kiểm tra: Hoán đổi bô bin số 1 sang số 2 để loại trừ.",
+        "P0302": "Bỏ lửa xi lanh số 2. Kiểm tra: Bugi hoặc kim phun số 2.",
+        "P0303": "Bỏ lửa xi lanh số 3. Kiểm tra: Bô bin hoặc nén xi lanh.",
+        "P0304": "Bỏ lửa xi lanh số 4. Kiểm tra: Bugi hoặc đường dây điện bô bin.",
+        "P0325": "Lỗi cảm biến kích nổ (Knock Sensor 1). Kiểm tra: Chuột cắn dây điện dưới gầm máy.",
+        "P0327": "Điện áp cảm biến kích nổ thấp. Kiểm tra: Lỏng giắc cảm biến.",
+        "P0330": "Lỗi cảm biến kích nổ 2 (Bank 2). Kiểm tra: Cảm biến nhánh số 2.",
+        "P0335": "Lỗi mạch cảm biến vị trí trục khuỷu (CKP). Kiểm tra: Cảm biến hoặc vành răng xung.",
+        "P0339": "Mạch cảm biến trục khuỷu chập chờn. Kiểm tra: Giắc cắm lỏng hoặc nhiễu điện.",
+        "P0340": "Lỗi mạch cảm biến vị trí trục cam (CMP). Kiểm tra: Cảm biến cam hoặc đặt sai cam.",
+
+        # NHÓM HỆ THỐNG KHÍ THẢI & EVAP (51-70)
+        "P0401": "Lưu lượng luân hồi khí thải (EGR) kém. Kiểm tra: Vệ sinh van EGR hoặc đường ống EGR.",
+        "P0403": "Lỗi mạch điều khiển van EGR. Kiểm tra: Cuộn dây van EGR hoặc dây dẫn.",
+        "P0420": "Hiệu suất bầu xúc tác thấp (Bank 1). Kiểm tra: Bầu Cataytic bị tắc hoặc hỏng.",
+        "P0430": "Hiệu suất bầu xúc tác thấp (Bank 2). Kiểm tra: Bầu xúc tác nhánh 2.",
+        "P0441": "Lỗi hệ thống kiểm soát hơi xăng (EVAP) - Dòng chảy không chuẩn. Kiểm tra: Bình than hoạt tính.",
+        "P0442": "Rò rỉ hệ thống EVAP (Lỗ rò nhỏ). Kiểm tra: Nắp bình xăng hoặc đường ống hơi xăng.",
+        "P0455": "Rò rỉ hệ thống EVAP (Lỗ rò lớn). Kiểm tra: Tuột ống hơi xăng hoặc hỏng van xả.",
+
+        # NHÓM ĐIỀU KHIỂN TỐC ĐỘ CẦM CHỪNG & HỆ THỐNG PHỤ (71-100)
+        "P0500": "Lỗi cảm biến tốc độ xe (VSS). Kiểm tra: Cảm biến tốc độ đầu ra hộp số hoặc ABS.",
+        "P0505": "Lỗi hệ thống điều khiển không tải (ISC/IAC). Kiểm tra: Vệ sinh van không tải hoặc họng ga.",
+        "P0511": "Mạch điều khiển khí không tải lỗi. Kiểm tra: Dây điện van không tải.",
+        "P0560": "Điện áp hệ thống không bình thường. Kiểm tra: Bình ắc quy hoặc máy phát điện (Dinamo).",
+        "P0601": "Lỗi bộ nhớ trong hộp điều khiển (ECM/PCM). Cách xử lý: Cài đặt lại phần mềm hoặc thay hộp.",
+        "P0606": "Lỗi bộ xử lý ECM/PCM. Kiểm tra: Nguồn hộp hoặc thay hộp mới.",
+        "P0705": "Lỗi mạch cảm biến dải số (Công tắc rẻ quạt). Kiểm tra: Vị trí cần số và giắc cắm hộp số.",
+        "P0741": "Lỗi ly hợp biến mô (Lock-up) luôn ngắt. Kiểm tra: Dầu hộp số hoặc van Solenoid TCC.",
+        "P0850": "Mạch công tắc trung gian P/N lỗi. Kiểm tra: Không cho đề nổ ở số D.",
+        "P0973": "Lỗi Solenoid chuyển số A - Điện áp thấp. Kiểm tra: Cuộn dây solenoid trong hộp số.",
+        "P2118": "Lỗi dòng điện motor bướm ga. Kiểm tra: Cầu chì ETCS 10A trong khoang máy.",
+        "P2195": "Cảm biến A/F bị kẹt nghèo (Bank 1 Sensor 1). Kiểm tra: Thay cảm biến A/F đầu lốc máy.",
+        
+        # Bổ sung một số hiện tượng Toyota hay gặp
+        "mất bù ga": "Thường do bẩn họng ga hoặc hỏng van không tải. Xử lý: Vệ sinh họng ga và cài đặt lại (Reset).",
+        "đạp ga không lên": "Kiểm tra chế độ an toàn (Limp Mode), thường do lỗi họng ga điện hoặc cảm biến bàn đạp ga.",
+        "rung giật khi dừng đèn đỏ": "Kiểm tra cao su chân máy hoặc bỏ lửa nhẹ xi lanh.",
+        "vô lăng bị lệch": "Kiểm tra thước lái hoặc cân bằng động, chỉnh lại góc đặt bánh xe."
+    }
+
     "Toyota": {
         "P0300": {
             "keywords": ["p0300", "bo lua", "misfire"],
