@@ -19,7 +19,8 @@ st.markdown("""
     .cause-box { background-color: #ffe6e6; border-left: 5px solid #d9534f; padding: 12px; border-radius: 4px; color: #333; }
     .fix-box { background-color: #e6ffe6; border-left: 5px solid #5cb85c; padding: 12px; border-radius: 4px; color: #333; }
     </style>
-""", unsafe_view_menu=False)
+""", unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # DỮ LIỆU CHẨN ĐOÁN
