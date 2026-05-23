@@ -1,4 +1,19 @@
 import streamlit as st
+# --- CODE ẨN MENU VÀ GITHUB ---
+st.set_page_config(page_title="MINH KHANG AUTO", page_icon="🚗", layout="centered")
+
+hide_style = """
+    <style>
+    /* Ẩn nút GitHub, Fork và nút 3 chấm ở góc trên phải */
+    .stAppDeployButton {display: none;}
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .viewerBadge_container__1QS1n {display: none;}
+    </style>
+    """
+st.markdown(hide_style, unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # Cấu hình trang & Giao diện tối chuyên nghiệp cho Mobile
