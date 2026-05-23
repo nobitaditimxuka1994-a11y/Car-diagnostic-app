@@ -104,7 +104,7 @@ DIAGNOSTIC_KEYWORDS = {
         "đạp ga không lên": "Kiểm tra chế độ an toàn (Limp Mode), thường do lỗi họng ga điện hoặc cảm biến bàn đạp ga.",
         "rung giật khi dừng đèn đỏ": "Kiểm tra cao su chân máy hoặc bỏ lửa nhẹ xi lanh.",
         "vô lăng bị lệch": "Kiểm tra thước lái hoặc cân bằng động, chỉnh lại góc đặt bánh xe."
-    }
+    
 
     "Toyota": {
         "P0300": {
