@@ -3,6 +3,16 @@ import pandas as pd
 from datetime import datetime
 import os
 import re
+from filelock import FileLock
+
+def track_search(brand, user_input, found_code, status):
+    log_file = 'search_history.csv'
+    lock_path = log_file + ".lock"
+    lock = FileLock(lock_path, timeout=5) # Đợi tối đa 5 giây nếu file đang bận
+    
+    with lock:
+        # Thực hiện việc ghi file CSV của bạn ở đây
+        # Khi hết khối lệnh 'with', file sẽ tự động được mở khóa cho người tiếp theo
 
 # --- 1. CẤU HÌNH GIAO DIỆN & STYLE ---
 st.set_page_config(page_title="MINH KHANG AUTO - AI DIAGNOSTIC", page_icon="⚡", layout="centered")
