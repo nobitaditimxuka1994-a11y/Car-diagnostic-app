@@ -6,7 +6,6 @@ from streamlit_gsheets import GSheetsConnection
 # --- 1. CẤU HÌNH GIAO DIỆN ---
 st.set_page_config(page_title="MINH KHANG AUTO AI", page_icon="⚡", layout="centered")
 
-# CSS tối ưu cho điện thoại
 st.markdown("""<style>
     .stAppDeployButton {display: none;}
     #MainMenu {visibility: hidden;}
@@ -19,9 +18,11 @@ st.markdown("""<style>
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def track_search(brand, user_input, found_code, status):
-    """Ghi log an toàn, chống lỗi 500 khi mạng 4G yếu"""
+    """Ghi log trực tiếp vào Google Sheets"""
     try:
+        # Đọc dữ liệu hiện có
         df = conn.read(ttl=0)
+        # Tạo dòng dữ liệu mới
         new_row = pd.DataFrame([{
             "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "Dòng xe": brand,
@@ -29,74 +30,69 @@ def track_search(brand, user_input, found_code, status):
             "AI nhận diện": found_code if found_code else "Không rõ",
             "Kết quả": status
         }])
+        # Cập nhật bảng
         updated_df = pd.concat([df, new_row], ignore_index=True)
         conn.update(data=updated_df)
-    except:
+    except Exception as e:
+        # Nếu lỗi mạng 4G, app vẫn chạy bình thường
         pass 
 
-# --- 3. KHO DỮ LIỆU ---
+# --- 3. DỮ LIỆU MÃ LỖI ---
 MASTER_DATA = {
     "VINFAST EV": {
-        "P0A78": "Lỗi biến tần (Inverter). Kiểm tra hệ thống làm mát & giắc cắm.",
-        "P0B59": "Lỗi cảm biến dòng Pin. Cần reset hệ thống BMS.",
-        "LOI SAC": "Lỗi không nhận sạc. Kiểm tra tiếp địa trạm sạc & vệ sinh cổng sạc."
+        "P0A78": "Lỗi biến tần (Inverter). Kiểm tra làm mát & giắc cắm.",
+        "P0B59": "Lỗi cảm biến dòng Pin. Cần reset BMS.",
+        "LOI SAC": "Lỗi không nhận sạc. Kiểm tra tiếp địa & cổng sạc."
     },
     "TOYOTA/LEXUS": {
-        "P0101": "Lỗi cảm biến MAF. Vệ sinh cảm biến & kiểm tra lọc gió.",
-        "P0171": "Nghèo xăng (Hỗn hợp loãng). Kiểm tra bơm xăng & hở chân không.",
-        "KHOI DEN": "Hiện tượng khói đen: Kiểm tra kim phun đái hoặc cảm biến Oxy."
+        "P0101": "Lỗi cảm biến MAF. Vệ sinh cảm biến & lọc gió.",
+        "P0171": "Nghèo xăng. Kiểm tra bơm xăng & hở chân không.",
+        "KHOI DEN": "Kiểm tra kim phun & cảm biến Oxy."
     }
 }
 
-# --- 4. QUẢN LÝ PHIÊN LÀM VIỆC (Ghi nhớ trạng thái đồng ý) ---
+# --- 4. XÁC NHẬN SỬ DỤNG (Lưu trạng thái bằng Session State) ---
 if 'confirmed' not in st.session_state:
     st.session_state.confirmed = False
 
 if not st.session_state.confirmed:
     st.title("⚡ MINH KHANG AUTO")
     st.error("### ⚠️ CẢNH BÁO TRÁCH NHIỆM")
-    st.write("Phần mềm hỗ trợ kỹ thuật chuyên sâu. Người dùng tự chịu trách nhiệm với mọi thao tác sửa chữa.")
-    
-    if st.button("TÔI ĐỒNG Ý & BẮT ĐẦU"):
+    st.write("Phần mềm dành cho thợ chuyên nghiệp. Bạn tự chịu trách nhiệm với mọi thao tác sửa chữa.")
+    if st.button("TÔI ĐỒNG Ý & VÀO TRA CỨU"):
         st.session_state.confirmed = True
         st.rerun()
     st.stop()
 
 # --- 5. GIAO DIỆN TRA CỨU ---
-st.title("🧑‍🔧 MINH KHANG AUTO ")
+st.title("🧑‍🔧 MINH KHANG AUTO AI")
 
-brand = st.selectbox("Dòng xe:", list(MASTER_DATA.keys()))
-raw_input = st.text_input("Mã lỗi/Hiện tượng:").upper().strip()
+brand = st.selectbox("Chọn dòng xe:", list(MASTER_DATA.keys()))
+raw_input = st.text_input("Nhập mã lỗi hoặc hiện tượng:").upper().strip()
 
 if raw_input:
     db = MASTER_DATA[brand]
     found_key = None
-    
     for key in db.keys():
         if raw_input in key or key in raw_input:
             found_key = key
             break
             
     if found_key:
-        st.success(f"✅ PHÁT HIỆN: {found_key}")
+        st.success(f"✅ KQ: {found_key}")
         st.info(db[found_key])
         track_search(brand, raw_input, found_key, "Thành công ✅")
     else:
-        st.error("❌ Chưa có dữ liệu mã này.")
+        st.error("❌ Chưa có dữ liệu.")
         track_search(brand, raw_input, None, "Thất bại ❌")
 
-# --- 6. ADMIN DASHBOARD (ĐÃ BỎ MẬT KHẨU) ---
+# --- 6. XEM LỊCH SỬ (ADMIN) ---
 st.write("---")
 with st.expander("📊 Xem lịch sử tra cứu (Admin)"):
     try:
-        # Tải dữ liệu và đảo ngược để xem cái mới nhất lên đầu
         history = conn.read(ttl=0)
         st.dataframe(history.iloc[::-1].head(50), use_container_width=True)
-        
-        # Nút làm mới dữ liệu nhanh
-        if st.button("Làm mới dữ liệu"):
-            st.rerun()
     except:
-        st.warning("Đang kết nối tới máy chủ dữ liệu...")
+        st.warning("Đang kết nối dữ liệu...")
 
-st.caption("📱 Hotline: 0963227718 | © 2024 Minh Khang Auto")
+st.caption("📱 Hotline: 0963227718")
