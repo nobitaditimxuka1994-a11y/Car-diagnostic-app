@@ -4,6 +4,48 @@ from datetime import datetime
 import os
 import re
 from filelock import FileLock
+import streamlit as st
+
+# Cấu hình này giúp ép giao diện về Light Mode và mở rộng bố cục
+st.set_page_config(
+    page_title="Minh Khang Auto AI",
+    page_icon="⚡",
+    layout="centered",
+    initial_sidebar_state="expanded" # Luôn hiện thanh công cụ bên trái
+)
+
+# Thêm CSS để đảm bảo nền luôn trắng và chữ luôn đen
+st.markdown(
+    """
+    <style>
+    /* Nền chính của App */
+    .stApp {
+        background-color: white;
+    }
+    /* Màu chữ tiêu đề và văn bản */
+    h1, h2, h3, p, span {
+        color: #1f1f1f !important;
+    }
+    /* Làm nổi bật khung cảnh báo */
+    .stAlert {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Nội dung app của bạn
+st.title("⚡ MINH KHANG AUTO AI")
+st.subheader("Hệ thống chẩn đoán lỗi Xăng & Điện chuyên sâu")
+
+st.error("⚠️ CẢNH BÁO: Phần mềm dành cho thợ kỹ thuật. Vui lòng xác nhận trước khi dùng.")
+
+if st.button('TÔI ĐỒNG Ý & CHỊU TRÁCH NHIỆM'):
+    st.success("Cảm ơn bạn đã xác nhận!")
+    # Hiển thị thêm công cụ ở đây
+
 def track_search(brand, user_input, found_code, status):
     log_file = 'search_history.csv'
     lock_path = log_file + ".lock"
