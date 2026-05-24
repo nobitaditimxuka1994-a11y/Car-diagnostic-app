@@ -4,15 +4,30 @@ from datetime import datetime
 import os
 import re
 from filelock import FileLock
-
 def track_search(brand, user_input, found_code, status):
     log_file = 'search_history.csv'
     lock_path = log_file + ".lock"
-    lock = FileLock(lock_path, timeout=5) # Đợi tối đa 5 giây nếu file đang bận
+    lock = FileLock(lock_path, timeout=5) 
     
-    with lock:
-        # Thực hiện việc ghi file CSV của bạn ở đây
-        # Khi hết khối lệnh 'with', file sẽ tự động được mở khóa cho người tiếp theo
+    try:
+        with lock:
+            now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            new_entry = pd.DataFrame({
+                "Thời gian": [now],
+                "Dòng xe": [brand],
+                "Khách gõ": [user_input],
+                "AI nhận diện": [found_code if found_code else "Không rõ"],
+                "Kết quả": [status]
+            })
+            
+            if not os.path.isfile(log_file):
+                new_entry.to_csv(log_file, index=False, encoding='utf-8-sig')
+            else:
+                new_entry.to_csv(log_file, mode='a', header=False, index=False, encoding='utf-8-sig')
+    except Exception as e:
+        st.warning(f"Không thể ghi lịch sử do xung đột mạng: {e}")
+
+
 
 # --- 1. CẤU HÌNH GIAO DIỆN & STYLE ---
 st.set_page_config(page_title="MINH KHANG AUTO - AI DIAGNOSTIC", page_icon="⚡", layout="centered")
