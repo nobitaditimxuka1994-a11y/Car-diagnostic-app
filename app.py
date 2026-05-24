@@ -3,89 +3,68 @@ import pandas as pd
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# 1. Cấu hình giao diện tối ưu cho điện thoại
-st.set_page_config(page_title="MINH KHANG AUTO AI", layout="centered")
-st.markdown("<style>.stAppDeployButton {display: none;} header {visibility: hidden;}</style>", unsafe_allow_html=True)
+# 1. Cấu hình giao diện cực gọn cho điện thoại
+st.set_page_config(page_title="MINH KHANG AUTO", layout="centered")
+st.markdown("<style>.stAppDeployButton {display: none;} header {visibility: hidden;} footer {visibility: hidden;}</style>", unsafe_allow_html=True)
 
-# 2. Kết nối Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
+# 2. Thiết lập kết nối
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+except Exception as e:
+    st.error("Cấu hình Secrets chưa đúng. Vui lòng kiểm tra lại link Sheets.")
 
-def track_search(brand, user_input, found_code, status):
-    """Hàm ghi lịch sử: Tự tạo dữ liệu mới nếu không đọc được Sheets cũ"""
+def save_to_sheets(brand, query, result):
+    """Ghi dữ liệu âm thầm, nếu lỗi không làm treo app"""
     try:
-        # Thử đọc dữ liệu hiện tại, nếu lỗi thì tạo bảng mới hoàn toàn
-        try:
-            df = conn.read(ttl=0)
-        except:
-            df = pd.DataFrame(columns=["Thời gian", "Dòng xe", "Khách gõ", "AI nhận diện", "Kết quả"])
-        
-        # Thêm dòng mới
+        df = conn.read(ttl=0)
         new_row = pd.DataFrame([{
             "Thời gian": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "Dòng xe": brand,
-            "Khách gõ": user_input,
-            "AI nhận diện": found_code if found_code else "Không rõ",
-            "Kết quả": status
+            "Khách gõ": query,
+            "AI nhận diện": query,
+            "Kết quả": result
         }])
-        
-        # Kết hợp và cập nhật
         updated_df = pd.concat([df, new_row], ignore_index=True)
         conn.update(data=updated_df)
     except:
-        # Đảm bảo app không bao giờ bị treo nếu lỗi mạng
-        pass
+        pass # Lỗi mạng hoặc link Sheets sai sẽ bị bỏ qua tại đây
 
-# 3. Quản lý trạng thái xác nhận
-if 'confirmed' not in st.session_state:
-    st.session_state.confirmed = False
-
-if not st.session_state.confirmed:
-    st.title("⚡ MINH KHANG AUTO")
-    st.error("### ⚠️ CẢNH BÁO TRÁCH NHIỆM")
-    st.write("Phần mềm dành cho thợ chuyên nghiệp. Bạn tự chịu trách nhiệm với mọi thao tác sửa chữa.")
-    if st.button("TÔI ĐỒNG Ý & VÀO TRA CỨU"):
-        st.session_state.confirmed = True
-        st.rerun()
-    st.stop()
-
-# 4. Giao diện tra cứu chính
+# 3. Giao diện chính
 st.title("🧑‍🔧 MINH KHANG AUTO AI")
 
-MASTER_DATA = {
+# Kho dữ liệu mã lỗi
+ERROR_CODES = {
     "VINFAST EV": {
-        "P0A78": "Lỗi Inverter. Kiểm tra hệ thống làm mát & giắc cắm.",
-        "LOI SAC": "Kiểm tra tiếp địa trạm sạc & cổng sạc."
+        "P0A78": "Lỗi Biến tần (Inverter). Kiểm tra giắc cam, nước làm mát & vệ sinh giắc cắm.",
+        "LOI SAC": "Lỗi không nhận sạc. Kiểm tra súng sạc, tiếp địa hoặc reset bộ sạc treo tường."
     },
     "TOYOTA/LEXUS": {
-        "P0101": "Lỗi cảm biến MAF. Vệ sinh cảm biến & lọc gió.",
-        "P0171": "Nghèo xăng. Kiểm tra bơm xăng & hở chân không."
+        "P0101": "Lỗi MAF (Cảm biến gió). Vệ sinh cảm biến và kiểm tra lọc gió bẩn.",
+        "P0171": "Hệ thống nhiên liệu quá nghèo. Kiểm tra bơm xăng, kim phun hoặc hở cổ hút."
     }
 }
 
-brand = st.selectbox("Chọn dòng xe:", list(MASTER_DATA.keys()))
-raw_input = st.text_input("Nhập mã lỗi:").upper().strip()
+brand = st.selectbox("Chọn dòng xe:", list(ERROR_CODES.keys()))
+user_input = st.text_input("Nhập mã lỗi/Hiện tượng:").upper().strip()
 
-if raw_input:
-    db = MASTER_DATA[brand]
-    res = db.get(raw_input)
+if user_input:
+    # Ưu tiên hiển thị kết quả trước cho thợ
+    db = ERROR_CODES.get(brand, {})
+    res = db.get(user_input)
+    
     if res:
-        st.success(f"✅ KQ: {res}")
-        # Chạy ghi log ngầm, không làm gián đoạn người dùng
-        track_search(brand, raw_input, raw_input, "Thành công ✅")
+        st.success(f"🔍 **KẾT QUẢ:** {res}")
+        save_to_sheets(brand, user_input, "Thành công")
     else:
-        st.error("Chưa có dữ liệu cho mã lỗi này.")
-        track_search(brand, raw_input, None, "Không thấy ❌")
+        st.warning("Hệ thống chưa cập nhật mã này. Đã ghi nhận để kỹ thuật viên kiểm tra.")
+        save_to_sheets(brand, user_input, "Chưa có mã")
 
-# 5. Xem lịch sử (Sửa lỗi treo app tại đây)
+# 4. Khu vực xem lịch sử (Chỉ tải khi cần)
 st.write("---")
-with st.expander("📊 Xem lịch sử tra cứu"):
-    if st.button("Tải dữ liệu mới nhất"):
+with st.expander("📊 Xem nhật ký tra cứu"):
+    if st.button("Tải dữ liệu"):
         try:
-            history = conn.read(ttl=0)
-            if history.empty:
-                st.write("Chưa có dữ liệu lịch sử.")
-            else:
-                st.dataframe(history.iloc[::-1], use_container_width=True)
-        except Exception as e:
-            st.warning("Không thể kết nối với Google Sheets. Vui lòng kiểm tra lại cấu hình Secrets.")
-            st.info("Lưu ý: Link Sheets trong Secrets phải ở dạng 'spreadsheet = \"link...\"' trên cùng 1 dòng.")
+            data = conn.read(ttl=0)
+            st.dataframe(data.iloc[::-1], use_container_width=True)
+        except:
+            st.info("Hiện tại chưa thể kết nối tới Google Sheets để xem lịch sử.")
