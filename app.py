@@ -77,9 +77,9 @@ st.set_page_config(page_title="MINH KHANG AUTO - AI DIAGNOSTIC", page_icon="⚡"
 st.markdown("""
     <style>
     .stAppDeployButton {display: none;}
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
+    #MainMenu {visibility: ;}
+    header {visibility: ;}
+    footer {visibility: ;}
     .reportview-container .main {color: #ffffff; background-color: #0e1117;}
     </style>
     """, unsafe_allow_html=True)
