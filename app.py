@@ -2,186 +2,119 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import os
-import streamlit as st
-import pandas as pd
-from datetime import datetime
-import os
 import re
 
-# --- CẤU HÌNH GIAO DIỆN ---
-st.set_page_config(page_title="MINH KHANG AUTO", page_icon="🧑‍🔧", layout="centered")
+# --- 1. CẤU HÌNH GIAO DIỆN & STYLE ---
+st.set_page_config(page_title="MINH KHANG AUTO - AI DIAGNOSTIC", page_icon="⚡", layout="centered")
 
-# --- HÀM AI XỬ LÝ CHUỖI (GIÚP AI THÔNG MINH HƠN) ---
-def ai_clean_input(text):
-    # Loại bỏ các từ thừa mà thợ hay gõ
-    text = text.lower().strip()
-    text = re.sub(r'(lỗi|mã|xe|bị|máy|hỏng)', '', text).strip()
-    return text.upper()
-
-# --- HÀM THEO DÕI ---
-def track_user_search(brand, user_input, result_found):
-    log_file = 'search_history.csv'
-    now = datetime.now().strftime("%H:%M:%S %d/%m/%Y")
-    new_data = pd.DataFrame({
-        "Thời gian": [now],
-        "Hãng xe": [brand],
-        "Mã khách nhập": [user_input],
-        "Kết quả": ["Tìm thấy ✅" if result_found else "Không thấy ❌"]
-    })
-    if not os.path.isfile(log_file):
-        new_data.to_csv(log_file, index=False, encoding='utf-8-sig')
-    else:
-        new_data.to_csv(log_file, mode='a', header=False, index=False, encoding='utf-8-sig')
-
-# --- DỮ LIỆU (Nâng cấp thêm nhiều từ khóa để AI dễ tìm) ---
-toyota_data = {
-    "P0101": "Lỗi cảm biến lưu lượng khí nạp (MAF). \n- Kiểm tra vệ sinh cảm biến.\n- Kiểm tra hở cổ hút.",
-    "P0171": "Hỗn hợp nhiên liệu quá nghèo (Nghèo xăng). \n- Kiểm tra bơm xăng.\n- Kiểm tra kim phun.",
-    "KHOI DEN": "Hiện tượng khói đen: \n- Kiểm tra lọc gió.\n- Kiểm tra kim phun có bị đái không.\n- Cảm biến oxy.",
-    "P0301": "Bỏ máy số 1: \n- Kiểm tra Bugi máy 1.\n- Kiểm tra Bô-bin đánh lửa.",
-}
-
-# --- GIAO DIỆN ---
-st.title("🧑‍🔧 MINH KHANG AUTO")
-
-if 'agreed' not in st.session_state:
-    st.session_state.agreed = False
-
-if not st.session_state.agreed:
-    st.warning("Vui lòng xác nhận trách nhiệm kỹ thuật trước khi dùng.")
-    if st.button("TÔI ĐỒNG Ý"):
-        st.session_state.agreed = True
-        st.rerun()
-    st.stop()
-
-brand = st.selectbox("Hãng xe:", ["Toyota", "Lexus", "Khác"])
-user_raw = st.text_input("Nhập mã lỗi hoặc triệu chứng:").strip()
-
-if user_raw:
-    clean_input = ai_clean_input(user_raw) # AI làm sạch dữ liệu gõ sai
-    found_key = None
-
-    # Vòng lặp AI tìm kiếm thông minh
-    for key in toyota_data.keys():
-        if clean_input in key or key in clean_input:
-            found_key = key
-            break
-    
-    if found_key:
-        st.success(f"🔍 AI PHÁN ĐOÁN: MÃ {found_key}")
-        st.write(toyota_data[found_key])
-        track_user_search(brand, user_raw, True)
-    else:
-        st.error("AI không tìm thấy trong dữ liệu hiện tại.")
-        track_user_search(brand, user_raw, False)
-        st.info("Yêu cầu đã được gửi đến Minh Khang Auto để cập nhật thêm.")
-
-# --- MỤC ADMIN XEM LỊCH SỬ ---
-st.write("---")
-with st.expander("📂 NHẬT KÝ KHÁCH TÌM KIẾM (ADMIN ONLY)"):
-    if os.path.isfile('search_history.csv'):
-        df = pd.read_csv('search_history.csv')
-        st.table(df.tail(5)) # Hiển thị 5 dòng mới nhất dạng bảng cho dễ nhìn
-    else:
-        st.write("Chưa có lịch sử nào.")
-
-st.markdown("#### 📱 Hotline: **0963227718**")
-
-# --- CẤU HÌNH GIAO DIỆN ---
-st.set_page_config(page_title="MINH KHANG AUTO", page_icon="🧑‍🔧", layout="centered")
-
-hide_style = """
+st.markdown("""
     <style>
     .stAppDeployButton {display: none;}
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
+    .reportview-container .main {color: #ffffff; background-color: #0e1117;}
     </style>
-    """
-st.markdown(hide_style, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# --- PHẦN 1: HÀM THEO DÕI (TRACKING) ---
-def track_user_search(brand, user_input, result_found):
-    # Tạo file tracking.csv nếu chưa có
+# --- 2. HÀM AI XỬ LÝ THÔNG MINH ---
+def ai_process_input(text):
+    text = text.lower().strip()
+    # Loại bỏ các từ thừa để AI tập trung vào từ khóa chính
+    noise_words = ['xe', 'bị', 'lỗi', 'mã', 'hỏng', 'tại sao', 'cách sửa', 'vấn đề']
+    for word in noise_words:
+        text = text.replace(word, '')
+    return text.strip()
+
+# --- 3. HÀM THEO DÕI LỊCH SỬ (TRACKING) ---
+def track_search(brand, user_input, found_code, status):
     log_file = 'search_history.csv'
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    new_data = {
+    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    new_entry = pd.DataFrame({
         "Thời gian": [now],
-        "Hãng xe": [brand],
-        "Mã khách nhập": [user_input],
-        "Tìm thấy": ["Có" if result_found else "Không"]
-    }
-    df_new = pd.DataFrame(new_data)
-    
-    # Ghi vào file (nối thêm dòng mới)
+        "Dòng xe": [brand],
+        "Khách gõ": [user_input],
+        "AI nhận diện": [found_code if found_code else "Không rõ"],
+        "Kết quả": [status]
+    })
     if not os.path.isfile(log_file):
-        df_new.to_csv(log_file, index=False, encoding='utf-8-sig')
+        new_entry.to_csv(log_file, index=False, encoding='utf-8-sig')
     else:
-        df_new.to_csv(log_file, mode='a', header=False, index=False, encoding='utf-8-sig')
+        new_entry.to_csv(log_file, mode='a', header=False, index=False, encoding='utf-8-sig')
 
-# --- PHẦN 2: CẢNH BÁO BẮT BUỘC ---
-if 'agreed' not in st.session_state:
-    st.session_state.agreed = False
+# --- 4. KHO DỮ LIỆU LỖI TỔNG HỢP (XĂNG & ĐIỆN) ---
+MASTER_DATA = {
+    "XE ĐIỆN (VINFAST/EV)": {
+        "P0A78": "Lỗi biến tần (Inverter). \n- Kiểm tra hệ thống làm mát cao áp.\n- Kiểm tra giắc cắm lỏng.",
+        "P0B59": "Lỗi cảm biến dòng điện Pin. \n- Kiểm tra cáp cao áp.\n- Cần reset hệ thống quản lý Pin (BMS).",
+        "LOI SAC": "Lỗi không nhận sạc/Sạc chậm: \n- Kiểm tra súng sạc.\n- Kiểm tra tiếp địa trạm sạc.\n- Vệ sinh cổng sạc trên xe.",
+        "PIN YEU": "Pin sụt nhanh: \n- Kiểm tra độ chai Pin (SOH).\n- Cập nhật phần mềm mới nhất cho BMS.",
+        "HE THONG LANH": "Điều hòa không mát (Xe điện): \n- Kiểm tra lốc lạnh điện (Electric Compressor).\n- Kiểm tra gas lạnh R1234yf."
+    },
+    "TOYOTA/LEXUS": {
+        "P0101": "Lỗi cảm biến MAF (Khí nạp). \n- Vệ sinh cảm biến bằng dung dịch chuyên dụng.\n- Kiểm tra lọc gió.",
+        "P0171": "Nghèo xăng (Hỗn hợp quá loãng). \n- Kiểm tra áp suất bơm xăng.\n- Kiểm tra hở chân không sau bướm ga.",
+        "P0300": "Bỏ máy ngẫu nhiên. \n- Kiểm tra hệ thống bugi và bô-bin.\n- Kiểm tra chất lượng xăng.",
+        "KHOI DEN": "Khói đen nhiều: \n- Kiểm tra kim phun có bị rò rỉ.\n- Kiểm tra cảm biến Oxy số 1.",
+        "KHOI TRANG": "Khói trắng: \n- Kiểm tra nước làm mát có lọt vào buồng đốt (thổi gioăng mặt máy)."
+    }
+}
 
-if not st.session_state.agreed:
-    st.error("""
-    ### ⚠️ CẢNH BÁO BẮT BUỘC:
-    ĐÂY LÀ PHẦN MỀM DÀNH CHO THỢ SỬA XE CHUYÊN NGHIỆP ĐƯỢC ĐÀO TẠO BÀI BẢN. 
-    MỌI HẬU QUẢ KHI LÀM VIỆC SAI NGUYÊN TẮC VÀ KỸ THUẬT SẼ PHẢI TỰ CHỊU TRÁCH NHIỆM!
-    """)
-    if st.button("TÔI ĐÃ HIỂU VÀ ĐỒNG Ý"):
-        st.session_state.agreed = True
+# --- 5. GIAO DIỆN CHÍNH ---
+st.title("⚡ MINH KHANG AUTO AI")
+st.subheader("Hệ thống chẩn đoán lỗi Xăng & Điện chuyên sâu")
+
+# Cảnh báo trách nhiệm
+if 'confirmed' not in st.session_state:
+    st.error("⚠️ CẢNH BÁO: Phần mềm dành cho thợ kỹ thuật. Vui lòng xác nhận trước khi dùng.")
+    if st.button("TÔI ĐỒNG Ý & CHỊU TRÁCH NHIỆM"):
+        st.session_state.confirmed = True
         st.rerun()
     st.stop()
 
-# --- PHẦN 3: GIAO DIỆN CHÍNH ---
-st.title("🧑‍🔧 MINH KHANG AUTO")
-st.markdown("#### Hệ thống Tra cứu AI & Kỹ thuật Sửa chữa")
+# Form nhập liệu
+col1, col2 = st.columns([1, 2])
+with col1:
+    category = st.selectbox("Dòng xe:", list(MASTER_DATA.keys()))
+with col2:
+    raw_input = st.text_input("Nhập mã lỗi hoặc hiện tượng (Ví dụ: P0A78, lỗi sạc, 171...)")
 
-brand = st.selectbox("Chọn hãng xe:", ["Toyota", "Lexus", "Hãng khác"])
-
-# DỮ LIỆU MÃ LỖI
-toyota_data = {
-    "P0101": """**Lỗi:** Hiệu suất mạch MAF.\n**Cách xử lý:** 1. Vệ sinh cảm biến MAF. 2. Kiểm tra lọc gió. 3. Kiểm tra rò rỉ khí nạp.""",
-    "P0171": """**Lỗi:** Hệ thống nhiên liệu quá nghèo.\n**Cách xử lý:** 1. Kiểm tra áp suất bơm xăng. 2. Kiểm tra kim phun. 3. Kiểm tra hở chân không.""",
-    "KHOI DEN": """**Hiện tượng:** Xe ra khói đen.\n**Kiểm tra:** 1. Lọc gió bẩn. 2. Kim phun đái. 3. Cảm biến Oxy hỏng.""",
-}
-
-# --- PHẦN 4: LOGIC TRA CỨU AI (GIẢ LẬP) ---
-if brand == "Toyota":
-    user_input = st.text_input("Nhập mã lỗi hoặc hiện tượng (VD: P0101, khói đen):").strip().upper()
+if raw_input:
+    clean_input = ai_process_input(raw_input)
+    db = MASTER_DATA[category]
+    found_key = None
     
-    if user_input:
-        found_key = None
-        
-        # AI tìm kiếm gần đúng (nhận diện cả khi khách nhập thiếu chữ P hoặc gõ nhầm)
-        for key in toyota_data.keys():
-            if user_input in key or key in user_input:
-                found_key = key
-                break
-        
-        if found_key:
-            st.info(f"🔍 **KẾT QUẢ AI PHÂN TÍCH CHO: {found_key}**")
-            st.write(toyota_data[found_key])
-            track_user_search(brand, user_input, True) # Lưu tracking thành công
-        else:
-            st.error("AI chưa tìm thấy mã này trong dữ liệu hệ thống.")
-            track_user_search(brand, user_input, False) # Lưu tracking thất bại để bạn biết mà cập nhật
-            st.warning("Thông tin đã được gửi tới kỹ thuật viên để cập nhật dữ liệu mới.")
+    # AI Search Logic
+    for key in db.keys():
+        if clean_input in key.lower() or key.lower() in clean_input:
+            found_key = key
+            break
+            
+    if found_key:
+        st.success(f"✅ AI PHÁT HIỆN: {found_key}")
+        st.write(db[found_key])
+        track_search(category, raw_input, found_key, "Thành công ✅")
+    else:
+        st.error("❌ AI chưa có dữ liệu chính xác cho mã này.")
+        track_search(category, raw_input, None, "Thất bại ❌")
+        st.info("Hệ thống đã ghi lại lỗi này để cập nhật sớm nhất.")
 
-# --- PHẦN 5: DÀNH CHO CHỦ APP (XEM LỊCH SỬ) ---
-# Đoạn này bạn có thể ẩn đi hoặc đặt mật khẩu
-with st.expander("Admin: Xem lịch sử khách tìm kiếm"):
+# --- 6. ADMIN DASHBOARD (THEO DÕI LỊCH SỬ) ---
+st.write("---")
+with st.expander("📊 XEM LỊCH SỬ TÌM KIẾM (CHỈ DÀNH CHO ADMIN)"):
     if os.path.isfile('search_history.csv'):
         history_df = pd.read_csv('search_history.csv')
-        st.dataframe(history_df.tail(10)) # Hiện 10 dòng gần nhất
+        st.table(history_df.tail(10)) # Hiển thị 10 lượt gần nhất
+        
+        # Nút xóa lịch sử nếu cần
+        if st.button("Xóa lịch sử"):
+            os.remove('search_history.csv')
+            st.rerun()
     else:
-        st.write("Chưa có dữ liệu tìm kiếm.")
+        st.write("Chưa có dữ liệu tìm kiếm nào.")
 
-# --- PHẦN 6: THÔNG TIN LIÊN HỆ ---
+# --- 7. FOOTER ---
 st.write("---")
-st.markdown("### 📞 HỖ TRỢ KỸ THUẬT")
-st.success("**Nhà phát triển:** Minh Khang Auto ")
-st.markdown("#### 📱 Hotline: **0963227718**") 
-st.caption("© 2024 Minh Khang Auto - Kỹ thuật chuyên sâu")
+st.success("**Kỹ thuật chuyên sâu: Minh Khang Auto**")
+st.markdown("#### 📱 Hotline: **0963227718**")
+st.caption("Cập nhật liên tục lỗi xe điện VinFast e34, VF8, VF9 và xe xăng đời mới.")
