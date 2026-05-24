@@ -1,7 +1,7 @@
 import streamlit as st
 
 # 1. Cấu hình giao diện và ẩn Menu thừa
-st.set_page_config(page_title="MINH KHANG AUTO", page_icon="🚗", layout="centered")
+st.set_page_config(page_title="MINH KHANG AUTO", page_icon="🧑‍🔧", layout="centered")
 
 hide_style = """
     <style>
@@ -29,7 +29,7 @@ if not st.session_state.agreed:
     st.stop() # Dừng app tại đây nếu chưa bấm đồng ý
 
 # --- PHẦN 2: GIAO DIỆN CHÍNH (Sau khi đã đồng ý) ---
-st.title("🚗 MINH KHANG AUTO")
+st.title("🧑‍🔧 MINH KHANG AUTO")
 st.markdown("#### Hệ thống Tra cứu Mã lỗi & Kỹ thuật Sửa chữa")
 
 # 3. CHỌN HÃNG XE
@@ -58,7 +58,7 @@ if brand == "Toyota":
 # --- PHẦN 6: THÔNG TIN NHÀ PHÁT TRIỂN (Số điện thoại của bạn) ---
 st.write("---")
 st.markdown("### 📞 HỖ TRỢ KỸ THUẬT")
-st.success("**Nhà phát triển:** Chủ Gara Minh Khang")
+st.success("**Nhà phát triển:** Minh Khang Auto ")
 # HÃY THAY SỐ ĐIỆN THOẠI CỦA BẠN VÀO DÒNG DƯỚI ĐÂY
 st.markdown("#### 📱 Hotline: **0963227718**") 
-st.caption("© 2024 Gara Minh Khang Auto - Kỹ thuật chuyên sâu")
+st.caption("© 2024 Minh Khang Auto - Kỹ thuật chuyên sâu")
